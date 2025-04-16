@@ -1,95 +1,80 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+import { useState } from "react"
+import CardResponse from "./components/CardResponse";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 export default function Home() {
+
+	const [question, setQuestion] = useState<string>("");
+	const [answer, setAnswer] = useState<string>("");
+	const [loading, setLoading] = useState<boolean>(false);
+
+	const handleAsk = async () => {
+		setLoading(true);
+
+		try {
+			const response = await fetch('/api/ask', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ question })
+			});
+
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+			const data = await response.json();
+			setAnswer(data.response || 'Terjadi kesalahan, silakan coba lagi');
+			setLoading(false); 
+
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		} finally {
+			setLoading(false);
+		}
+	}
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <main>
+			<div className="mt-4 py-8">
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+				<div className="d-flex justify-content-center align-items-center h-100">
+					<h1>Kalyana<span style={{ fontWeight: '800', color: '#ffb3c6'}}>AI</span></h1>
+				</div>
+				<div className="text-center"
+				>
+					<i>Always in mindfullness</i>
+				</div>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+				<div className="container">
+					<div className="row">
+						<div className="col-12 col-sm-12">
+							<textarea rows={5} cols={50} placeholder="Pertanyaan untuk mulai diskusi seputar dhammapada/sutta"
+							value={question}
+							onChange={(e) => setQuestion(e.target.value)}
+							className="form-control"/>
+						</div>
+					</div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+					<div className="row mt-4">
+						<div className="col-md-8">
+							<button id="askButton" onClick={handleAsk} disabled={loading}
+							className="btn btn-md"
+							style={{ backgroundColor: '#ffb3c6' , color: 'white' }}
+							>{loading ? 'KalyanaAI Menjawab....' : 'Tanya'}</button>
+						</div>
+					</div>
+				</div>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+			</div>
+
+			{answer && (
+				<CardResponse paramAnswer={answer}/>
+			)}
+
     </main>
   )
 }
